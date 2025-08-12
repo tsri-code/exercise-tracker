@@ -1,103 +1,47 @@
 import Image from "next/image";
+import GradientBackground from "./components/GradientBackground";
 
-export default function Home() {
+async function getApiStatus() {
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000";
+  try {
+    const res = await fetch(`${base}/api/config`, { cache: "no-store" });
+    if (!res.ok) return { ok: false } as const;
+    const json = (await res.json()) as {
+      ok: boolean;
+      hasExercisesApiKey?: boolean;
+    };
+    return { ok: true, hasKey: Boolean(json.hasExercisesApiKey) } as const;
+  } catch {
+    return { ok: false } as const;
+  }
+}
+
+export default async function Home() {
+  const api = await getApiStatus();
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="relative min-h-[90vh]">
+      <GradientBackground />
+      <main className="mx-auto max-w-6xl px-6 sm:px-8 pt-24 pb-28 text-center">
+        <div className="inline-flex items-center gap-3 mb-6">
+          <span className="text-2xl">水</span>
+        </div>
+        <h1 className="text-5xl sm:text-7xl md:text-8xl font-extrabold tracking-tight text-white drop-shadow-[0_6px_24px_rgba(34,211,238,0.35)]">
+          PLAN • TRAIN • TRACK
+        </h1>
+        <p className="mt-6 text-zinc-300 text-lg max-w-2xl mx-auto">
+          Build smarter routines, log sets and reps, and progress week by week. Designed for people who love the grind.
+        </p>
+        <div className="mt-10 flex items-center justify-center gap-4">
+          <a href="/planner" className="px-6 py-3 rounded-full text-sm font-semibold text-black bg-cyan-400 hover:bg-cyan-300 transition-colors">Open planner</a>
+          <a href="/workouts" className="px-6 py-3 rounded-full text-sm font-semibold text-white/90 ring-1 ring-white/15 hover:bg-white/5 transition-colors">View workouts</a>
+        </div>
+        <div className="mt-16 flex items-center justify-center gap-6">
+          <Image className="rounded-2xl shadow-lg" src="/next.svg" alt="" width={80} height={40} />
+          <div className={`px-2 py-1 rounded text-xs font-semibold ${api.ok ? (api.hasKey ? 'bg-green-500/20 text-green-200' : 'bg-yellow-500/20 text-yellow-200') : 'bg-red-500/20 text-red-200'}`}>
+            {api.ok ? (api.hasKey ? 'API connected' : 'API connected (no key)') : 'API unreachable'}
+          </div>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
