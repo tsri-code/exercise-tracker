@@ -109,13 +109,13 @@ export default function RoutineEditor({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <input
           value={routine.title}
           onChange={(e) => updateTitle(e.target.value)}
           className="rounded-md bg-white/5 ring-1 ring-white/10 px-3 py-2 text-sm text-white"
         />
-        <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/routines"
             className="text-xs text-white/70 hover:underline"
@@ -180,7 +180,7 @@ export default function RoutineEditor({
             </div>
             <div className="mt-2 space-y-2">
               {it.sets.map((s, si) => (
-                <div key={si} className="flex items-center gap-3">
+                <div key={si} className="flex flex-wrap items-center gap-3">
                   <div className="text-xs text-white/60 w-10">Set {si + 1}</div>
                   <input
                     type="number"

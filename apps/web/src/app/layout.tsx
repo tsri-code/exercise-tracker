@@ -30,7 +30,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-zinc-50 to-white text-gray-900`}
       >
         <TopNav />
-        <main className="mx-auto max-w-6xl px-4 py-8 min-h-[calc(100dvh-64px)]">
+        <main className="mx-auto w-full max-w-6xl px-3 sm:px-4 py-6 sm:py-8 min-h-[calc(100dvh-64px)]">
           {children}
         </main>
       </body>

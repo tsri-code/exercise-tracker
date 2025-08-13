@@ -178,7 +178,7 @@ export default function Page() {
     <div className="space-y-6">
       <div className="card p-6">
         <h1 className="text-xl font-semibold mb-4">Create workout</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -186,7 +186,7 @@ export default function Page() {
             className="sm:col-span-3 rounded-md bg-white/5 ring-1 ring-white/10 px-3 py-2 text-sm text-white placeholder:text-white/40"
           />
 
-          <div className="sm:col-span-1">
+          <div className="md:col-span-1">
             <label className="text-xs text-white/60">Search exercises</label>
             <input
               value={query}
@@ -231,7 +231,7 @@ export default function Page() {
             </div>
           </div>
 
-          <div className="sm:col-span-2">
+          <div className="md:col-span-2">
             <label className="text-xs text-white/60">Workout items</label>
             <div className="mt-1 flex items-center justify-between">
               <div className="text-xs text-white/60">Unit</div>

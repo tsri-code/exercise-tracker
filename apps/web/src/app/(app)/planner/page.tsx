@@ -111,7 +111,7 @@ export default function Page() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-xl font-semibold">Planner</h1>
         <div className="flex items-center gap-2 text-sm">
           <button
@@ -135,7 +135,7 @@ export default function Page() {
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2">
         {days.map((d) => (
           <div key={d} className="text-xs text-white/60 px-2">
             {d}
