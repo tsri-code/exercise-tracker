@@ -80,6 +80,12 @@ export default function TopNav() {
               </Link>
             );
           })}
+          {pathname?.startsWith("/calories") && (
+            <div className="flex gap-1 mt-1">
+              <Link href="/calories/personal" className={`px-3 py-2 rounded-md ${pathname==='/calories/personal'? 'bg-white text-black':'text-white/80 hover:bg-white/10'}`}>Personal Info</Link>
+              <Link href="/calories/daily" className={`px-3 py-2 rounded-md ${pathname==='/calories/daily'? 'bg-white text-black':'text-white/80 hover:bg-white/10'}`}>Daily Info</Link>
+            </div>
+          )}
           <Link
             href={pathname?.startsWith("/calories") ? "/" : "/calories/personal"}
             className="md:hidden mt-1 px-3 py-2 rounded-md bg-cyan-400 text-black font-semibold"

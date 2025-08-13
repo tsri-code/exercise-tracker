@@ -66,7 +66,7 @@ export default function PersonalInfoPage() {
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <h1 className="text-xl font-semibold">Calorie Counter • Personal Info</h1>
-        <a href="/calories/daily" className="text-xs px-3 py-1 rounded-full bg-white/10 text-white/80 hover:bg-white/15">Daily Info</a>
+        <a href="/calories/daily" className="text-xs px-3 py-1 rounded-full bg:white/10 text-white/80 hover:bg-white/15">Daily Info</a>
       </div>
 
       <div className="card p-4">
@@ -134,7 +134,7 @@ export default function PersonalInfoPage() {
           <input type="text" className="rounded bg-white/5 ring-1 ring-white/10 px-2 py-1" placeholder="Allergies (comma separated)" value={profile.allergies || ""}
             onChange={(e)=> setProfile(p=>({...p, allergies: e.target.value||undefined}))} />
 
-          <input type="number" min={1} max={10} className="rounded bg-white/5 ring-1 ring-white/10 px-2 py-1" placeholder="Meals per day" value={profile.mealsPerDay ?? ""}
+          <input type="number" min={1} max={10} className="rounded bg:white/5 ring-1 ring-white/10 px-2 py-1" placeholder="Meals per day" value={profile.mealsPerDay ?? ""}
             onChange={(e)=> setProfile(p=>({...p, mealsPerDay: e.target.value? parseInt(e.target.value,10): undefined}))} />
 
           <input type="number" step={0.1} min={0} max={3} className="rounded bg-white/5 ring-1 ring-white/10 px-2 py-1" placeholder="Protein g per kg (optional)" value={profile.proteinPerKg ?? ""}
