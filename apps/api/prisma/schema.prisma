@@ -1,0 +1,43 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+model Routine {
+  id        String   @id @default(cuid())
+  title     String
+  unit      String   @default("kg")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  items     RoutineItem[]
+  schedules Schedule[]
+}
+
+model RoutineItem {
+  id         String   @id @default(cuid())
+  routineId  String
+  routine    Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  exerciseId String
+  name       String
+  sets       Json     // array of { reps, weight }
+}
+
+model Schedule {
+  id         String   @id @default(cuid())
+  routineId  String
+  routine    Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  startDate  DateTime   // date/time when schedule starts
+  time       String      // HH:mm for quick display
+  repeat     String      // none | daily | weekly | monthly
+  interval   Int        @default(1) // every N units
+  daysOfWeek Json?      // for weekly: array of numbers 0-6
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
