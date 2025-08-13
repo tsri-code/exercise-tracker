@@ -53,10 +53,10 @@ export default function TopNav() {
             Menu
           </button>
           <Link
-            href="/planner"
+            href={pathname?.startsWith("/calories") ? "/" : "/calories/personal"}
             className="hidden sm:inline-flex px-4 py-2 rounded-full text-sm font-semibold text-black bg-cyan-400 hover:bg-cyan-300 transition-colors"
           >
-            Get started
+            {pathname?.startsWith("/calories") ? "Exercise Tracker" : "Calorie Counter"}
           </Link>
         </div>
       </nav>
@@ -80,6 +80,12 @@ export default function TopNav() {
               </Link>
             );
           })}
+          <Link
+            href={pathname?.startsWith("/calories") ? "/" : "/calories/personal"}
+            className="md:hidden mt-1 px-3 py-2 rounded-md bg-cyan-400 text-black font-semibold"
+          >
+            {pathname?.startsWith("/calories") ? "Exercise Tracker" : "Calorie Counter"}
+          </Link>
         </div>
       </div>
     </header>

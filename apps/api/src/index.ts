@@ -290,6 +290,78 @@ app.get("/api/config", (_req, res) => {
   });
 });
 
+// Nutrition profile CRUD
+const profileSchema = z.object({
+  weightValue: z.number().positive(),
+  weightUnit: z.enum(["kg", "lbs"]),
+  heightValue: z.number().positive(),
+  heightUnit: z.enum(["cm", "in"]),
+  age: z.number().int().min(10).max(120),
+  gender: z.enum(["male", "female", "other"]).default("other"),
+  goal: z.enum(["recomp", "lose", "gain"]),
+  rateLbsPerWeek: z.number().min(-2).max(2).default(0),
+  activityLevel: z
+    .enum(["sedentary", "light", "moderate", "active", "very"]) 
+    .default("moderate"),
+  bodyFatPercent: z.number().min(0).max(75).optional(),
+  dietaryPreference: z.string().optional(),
+  allergies: z.string().optional(),
+  mealsPerDay: z.number().int().min(1).max(10).optional(),
+  proteinPerKg: z.number().min(0).max(3).optional(),
+});
+
+app.get("/api/nutrition/profile", async (_req, res) => {
+  const profile = await prisma.nutritionProfile.findFirst({
+    orderBy: { updatedAt: "desc" },
+  });
+  res.json({ data: profile || null });
+});
+
+app.post("/api/nutrition/profile", async (req, res) => {
+  try {
+    const data = profileSchema.parse(req.body);
+    const created = await prisma.nutritionProfile.create({ data });
+    res.status(201).json({ data: created });
+  } catch (e: any) {
+    res.status(400).json({ error: e?.message || "Invalid payload" });
+  }
+});
+
+app.put("/api/nutrition/profile/:id", async (req, res) => {
+  const { id } = req.params as { id: string };
+  try {
+    const data = profileSchema.parse(req.body);
+    const updated = await prisma.nutritionProfile.update({ where: { id }, data });
+    res.json({ data: updated });
+  } catch (e: any) {
+    res.status(400).json({ error: e?.message || "Invalid payload" });
+  }
+});
+
+// Simple nutrition food search proxy (API Ninjas Nutrition)
+// https://api-ninjas.com/api/nutrition
+app.get("/api/nutrition/search", async (req, res) => {
+  const q = String(req.query.q || "").trim();
+  if (!q) return res.status(400).json({ error: "Missing q" });
+  const key = process.env.EXERCISES_API_KEY || process.env.NUTRITION_API_KEY || "";
+  if (!key) return res.status(500).json({ error: "Missing API key" });
+  const url = `https://api.api-ninjas.com/v1/nutrition?query=${encodeURIComponent(q)}`;
+  const r = await fetch(url, { headers: { "X-Api-Key": key } });
+  if (!r.ok) return res.status(r.status).json({ error: await r.text() });
+  const data = await r.json();
+  // Normalize to a small shape
+  const items = (Array.isArray(data) ? data : []).map((it: any, i: number) => ({
+    id: `${(it.name || "food").toLowerCase()}-${i}`,
+    name: it.name,
+    serving_size_g: it.serving_size_g,
+    calories: it.calories,
+    protein_g: it.protein_g,
+    fat_total_g: it.fat_total_g,
+    carbohydrates_total_g: it.carbohydrates_total_g,
+  }));
+  res.json({ data: items });
+});
+
 const port = process.env.PORT ? Number(process.env.PORT) : 4000;
 app.listen(port, () => {
   const hasKey = Boolean(process.env.EXERCISES_API_KEY);
