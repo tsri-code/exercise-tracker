@@ -35,6 +35,7 @@ const defaults: Profile = {
 export default function PersonalInfoPage() {
   const [profile, setProfile] = useState<Profile>(defaults);
   const [saving, setSaving] = useState(false);
+  const [target, setTarget] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -60,6 +61,43 @@ export default function PersonalInfoPage() {
     const json = await res.json();
     if (json?.data) setProfile(json.data);
     setSaving(false);
+    computeTarget();
+  }
+
+  function computeTarget() {
+    const LB_TO_KG = 0.45359237;
+    const IN_TO_CM = 2.54;
+    const KCAL_PER_LB = 3500.0;
+    const PAL: Record<string, number> = {
+      sedentary: 1.2,
+      light: 1.375,
+      moderate: 1.55,
+      active: 1.725,
+      very: 1.9,
+      athlete: 1.9,
+    } as any;
+
+    const weightKg = profile.weightUnit === "kg" ? profile.weightValue : profile.weightValue * LB_TO_KG;
+    const heightCm = profile.heightUnit === "cm" ? profile.heightValue : profile.heightValue * IN_TO_CM;
+    const age = profile.age;
+    const sexCoeff = profile.gender === "male" ? 5 : -161;
+
+    let BMR: number;
+    if (profile.bodyFatPercent !== undefined && profile.bodyFatPercent !== null && !Number.isNaN(profile.bodyFatPercent)) {
+      const lbmKg = weightKg * (1 - (profile.bodyFatPercent / 100));
+      BMR = 370 + 21.6 * lbmKg;
+    } else {
+      BMR = 10 * weightKg + 6.25 * heightCm - 5 * age + sexCoeff;
+    }
+    const pal = PAL[profile.activityLevel] || 1.55;
+    const TDEE = BMR * pal;
+    const weeklyDeltaLb = profile.goal === "recomp" ? 0 : (profile.goal === "gain" ? Math.abs(profile.rateLbsPerWeek) : -Math.abs(profile.rateLbsPerWeek));
+    const dailyAdjust = (weeklyDeltaLb * KCAL_PER_LB) / 7.0;
+    let targetKcal = TDEE + dailyAdjust;
+    const maxDeficit = 0.25 * TDEE;
+    const maxSurplus = 0.15 * TDEE;
+    targetKcal = Math.max(TDEE - maxDeficit, Math.min(TDEE + maxSurplus, targetKcal));
+    setTarget(Math.round(targetKcal));
   }
 
   return (
@@ -142,15 +180,17 @@ export default function PersonalInfoPage() {
         </div>
 
         <div className="mt-3">
-          <button onClick={save} disabled={saving} className="px-3 py-1 rounded-full text-xs font-semibold text-black bg-cyan-400 hover:bg-cyan-300">
+          <button onClick={save} disabled={saving} className="px-3 py-1 rounded-full text-xs font-semibold text-black bg-cyan-400 hover:bg-cyan-300 mr-2">
             {saving? "Saving…" : "Save profile"}
           </button>
+          <button onClick={computeTarget} className="px-3 py-1 rounded-full text-xs font-semibold text-black bg-white/20 hover:bg-white/30">Calculate target</button>
         </div>
       </div>
 
-      <div className="text-xs text-white/60">
-        Healthy goal limits enforced: up to ±2 lbs/week. You can also set a custom rate within that range.
-      </div>
+      <div className="text-xs text-white/60">Healthy goal limits enforced: up to ±2 lbs/week. You can also set a custom rate within that range.</div>
+      {target !== null && (
+        <div className="text-sm text-white">Target calories: <span className="font-semibold">{target} kcal/day</span></div>
+      )}
     </div>
   );
 }

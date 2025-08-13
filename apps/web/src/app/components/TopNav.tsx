@@ -8,6 +8,10 @@ const links = [
   { href: "/workouts", label: "Workouts" },
   { href: "/routines", label: "Routines" },
 ];
+const calorieLinks = [
+  { href: "/calories/personal", label: "Personal Info" },
+  { href: "/calories/meal-plan", label: "Meal Plan" },
+];
 
 export default function TopNav() {
   const pathname = usePathname();
@@ -15,6 +19,8 @@ export default function TopNav() {
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+  const isCalories = pathname?.startsWith("/calories");
+  const visibleLinks = isCalories ? calorieLinks : links;
   return (
     <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-black/20 backdrop-blur-xl">
       <nav className="relative mx-auto max-w-6xl px-4 h-16 flex items-center justify-between text-white">
@@ -24,7 +30,7 @@ export default function TopNav() {
 
         {/* Centered nav */}
         <div className="absolute left-1/2 -translate-x-1/2 hidden md:flex items-center gap-2 text-sm">
-          {links.map((l) => {
+          {visibleLinks.map((l) => {
             const active = pathname === l.href;
             return (
               <Link
@@ -53,10 +59,10 @@ export default function TopNav() {
             Menu
           </button>
           <Link
-            href={pathname?.startsWith("/calories") ? "/" : "/calories/personal"}
+            href={isCalories ? "/" : "/calories/personal"}
             className="hidden sm:inline-flex px-4 py-2 rounded-full text-sm font-semibold text-black bg-cyan-400 hover:bg-cyan-300 transition-colors"
           >
-            {pathname?.startsWith("/calories") ? "Exercise Tracker" : "Calorie Counter"}
+            {isCalories ? "Exercise Tracker" : "Calorie Counter"}
           </Link>
         </div>
       </nav>
@@ -66,7 +72,7 @@ export default function TopNav() {
         className={`${open ? "block" : "hidden"} md:hidden border-t border-white/10 bg-black/40 backdrop-blur-xl`}
       >
         <div className="mx-auto max-w-6xl px-4 py-2 flex flex-col gap-1">
-          {links.map((l) => {
+          {(isCalories ? calorieLinks : links).map((l) => {
             const active = pathname === l.href;
             return (
               <Link
@@ -80,17 +86,11 @@ export default function TopNav() {
               </Link>
             );
           })}
-          {pathname?.startsWith("/calories") && (
-            <div className="flex gap-1 mt-1">
-              <Link href="/calories/personal" className={`px-3 py-2 rounded-md ${pathname==='/calories/personal'? 'bg-white text-black':'text-white/80 hover:bg-white/10'}`}>Personal Info</Link>
-              <Link href="/calories/daily" className={`px-3 py-2 rounded-md ${pathname==='/calories/daily'? 'bg-white text-black':'text-white/80 hover:bg-white/10'}`}>Daily Info</Link>
-            </div>
-          )}
           <Link
-            href={pathname?.startsWith("/calories") ? "/" : "/calories/personal"}
+            href={isCalories ? "/" : "/calories/personal"}
             className="md:hidden mt-1 px-3 py-2 rounded-md bg-cyan-400 text-black font-semibold"
           >
-            {pathname?.startsWith("/calories") ? "Exercise Tracker" : "Calorie Counter"}
+            {isCalories ? "Exercise Tracker" : "Calorie Counter"}
           </Link>
         </div>
       </div>
