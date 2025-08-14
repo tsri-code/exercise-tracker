@@ -106,7 +106,7 @@ export default function MealPlanPage() {
           <h1 className="text-xl font-semibold">Calorie Counter • Meal Plan</h1>
           <div className="text-sm text-white/60">{date}</div>
         </div>
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center flex-wrap">
           <input type="date" value={date} onChange={(e)=> setDate(e.target.value)} className="rounded bg-white/5 ring-1 ring-white/10 px-2 py-1 text-sm" />
           {target != null && (
             <div className="rounded-md bg-white/5 ring-1 ring-white/10 px-3 py-2 text-xs">
@@ -123,6 +123,9 @@ export default function MealPlanPage() {
               <div className="text-white/70">Remaining</div>
               <div className="text-white font-semibold">{remaining} kcal</div>
             </div>
+          )}
+          {target != null && (
+            <div className="text-xs text-white/70 ml-2">{target} - {Math.round(totals.cal)} = <span className="text-white font-semibold">{remaining ?? (target - Math.round(totals.cal))}</span> kcal</div>
           )}
         </div>
       </div>

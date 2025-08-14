@@ -37,6 +37,11 @@ export default function PersonalInfoPage() {
   const [saving, setSaving] = useState(false);
   const [target, setTarget] = useState<number | null>(null);
 
+  const toNumber = (v: string, fallback = 0) => {
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? n : fallback;
+  };
+
   useEffect(() => {
     (async () => {
       const res = await fetch(`${API_BASE_URL}/api/nutrition/profile`, { cache: "no-store" });
@@ -113,7 +118,7 @@ export default function PersonalInfoPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
           <div className="flex gap-2">
             <input type="number" className="w-full rounded bg-white/5 ring-1 ring-white/10 px-2 py-1" placeholder="Weight" value={profile.weightValue}
-              onChange={(e)=> setProfile(p=>({...p, weightValue: parseFloat(e.target.value||"0")}))} />
+              onChange={(e)=> setProfile(p=>({...p, weightValue: toNumber(e.target.value, p.weightValue)}))} />
             <select className="rounded bg-white/5 ring-1 ring-white/10 px-2 py-1" value={profile.weightUnit}
               onChange={(e)=> setProfile(p=>({...p, weightUnit: e.target.value as any}))}>
               <option value="kg">kg</option>
@@ -123,7 +128,7 @@ export default function PersonalInfoPage() {
 
           <div className="flex gap-2">
             <input type="number" className="w-full rounded bg-white/5 ring-1 ring-white/10 px-2 py-1" placeholder="Height" value={profile.heightValue}
-              onChange={(e)=> setProfile(p=>({...p, heightValue: parseFloat(e.target.value||"0")}))} />
+              onChange={(e)=> setProfile(p=>({...p, heightValue: toNumber(e.target.value, p.heightValue)}))} />
             <select className="rounded bg-white/5 ring-1 ring-white/10 px-2 py-1" value={profile.heightUnit}
               onChange={(e)=> setProfile(p=>({...p, heightUnit: e.target.value as any}))}>
               <option value="cm">cm</option>
@@ -132,7 +137,7 @@ export default function PersonalInfoPage() {
           </div>
 
           <input type="number" min={10} max={120} className="rounded bg-white/5 ring-1 ring-white/10 px-2 py-1" placeholder="Age" value={profile.age}
-            onChange={(e)=> setProfile(p=>({...p, age: parseInt(e.target.value||"0",10)}))} />
+            onChange={(e)=> setProfile(p=>({...p, age: Math.max(10, Math.min(120, Math.round(toNumber(e.target.value, p.age))))}))} />
 
           <select className="rounded bg-white/5 ring-1 ring-white/10 px-2 py-1" value={profile.gender}
             onChange={(e)=> setProfile(p=>({...p, gender: e.target.value as any}))}>
@@ -161,13 +166,13 @@ export default function PersonalInfoPage() {
           <div className="flex gap-2">
             <input type="number" step={0.1} min={-2} max={2} className="w-full rounded bg-white/5 ring-1 ring-white/10 px-2 py-1" placeholder="Rate (lbs/week)"
               value={profile.rateLbsPerWeek}
-              onChange={(e)=> setProfile(p=>({...p, rateLbsPerWeek: parseFloat(e.target.value||"0")}))} />
+              onChange={(e)=> setProfile(p=>({...p, rateLbsPerWeek: Math.max(-2, Math.min(2, toNumber(e.target.value, p.rateLbsPerWeek)))}))} />
             <span className="text-xs text-white/60 self-center">max ±2</span>
           </div>
 
           <input type="number" step={0.1} min={0} max={75} className="rounded bg-white/5 ring-1 ring-white/10 px-2 py-1" placeholder="Body fat % (optional)"
             value={profile.bodyFatPercent ?? ""}
-            onChange={(e)=> setProfile(p=>({...p, bodyFatPercent: e.target.value? parseFloat(e.target.value): undefined}))} />
+            onChange={(e)=> setProfile(p=>({...p, bodyFatPercent: e.target.value!==""? Math.max(0, Math.min(75, toNumber(e.target.value, p.bodyFatPercent ?? 0))): undefined}))} />
 
           <input type="text" className="rounded bg-white/5 ring-1 ring-white/10 px-2 py-1" placeholder="Dietary preference (e.g., keto, vegan)" value={profile.dietaryPreference || ""}
             onChange={(e)=> setProfile(p=>({...p, dietaryPreference: e.target.value||undefined}))} />
@@ -176,10 +181,10 @@ export default function PersonalInfoPage() {
             onChange={(e)=> setProfile(p=>({...p, allergies: e.target.value||undefined}))} />
 
           <input type="number" min={1} max={10} className="rounded bg:white/5 ring-1 ring-white/10 px-2 py-1" placeholder="Meals per day" value={profile.mealsPerDay ?? ""}
-            onChange={(e)=> setProfile(p=>({...p, mealsPerDay: e.target.value? parseInt(e.target.value,10): undefined}))} />
+            onChange={(e)=> setProfile(p=>({...p, mealsPerDay: e.target.value!==""? Math.max(1, Math.min(10, Math.round(toNumber(e.target.value, p.mealsPerDay ?? 1)))): undefined}))} />
 
           <input type="number" step={0.1} min={0} max={3} className="rounded bg-white/5 ring-1 ring-white/10 px-2 py-1" placeholder="Protein g per kg (optional)" value={profile.proteinPerKg ?? ""}
-            onChange={(e)=> setProfile(p=>({...p, proteinPerKg: e.target.value? parseFloat(e.target.value): undefined}))} />
+            onChange={(e)=> setProfile(p=>({...p, proteinPerKg: e.target.value!==""? Math.max(0, Math.min(3, toNumber(e.target.value, p.proteinPerKg ?? 0))): undefined}))} />
         </div>
 
         <div className="mt-3">
