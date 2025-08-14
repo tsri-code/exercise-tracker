@@ -11,6 +11,23 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Basic request logger for debugging
+app.use((req, _res, next) => {
+  if (req.path.startsWith('/api/nutrition')) {
+    console.log(`[api] ${req.method} ${req.path}`);
+  }
+  next();
+});
+
+// Graceful JSON parse error handler
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (err && err.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'Invalid JSON body' });
+  }
+  return next(err);
+});
+
 const prisma = new PrismaClient();
 
 app.get("/health", (_req, res) => {
@@ -301,12 +318,12 @@ const profileSchema = z.object({
   goal: z.enum(["recomp", "lose", "gain"]),
   rateLbsPerWeek: z.number().min(-2).max(2).default(0),
   activityLevel: z.enum(["sedentary", "light", "moderate", "active", "very", "athlete"]),
-  bodyFatPercent: z.number().min(0).max(75).optional(),
-  dietaryPreference: z.string().optional(),
-  allergies: z.string().optional(),
-  mealsPerDay: z.number().int().min(1).max(10).optional(),
-  proteinPerKg: z.number().min(0).max(3).optional(),
-  lastTargetKcal: z.number().int().positive().optional(),
+  bodyFatPercent: z.number().min(0).max(75).nullable().optional(),
+  dietaryPreference: z.string().nullable().optional(),
+  allergies: z.string().nullable().optional(),
+  mealsPerDay: z.number().int().min(1).max(10).nullable().optional(),
+  proteinPerKg: z.number().min(0).max(3).nullable().optional(),
+  lastTargetKcal: z.number().int().positive().nullable().optional(),
 });
 
 function computeTargetKcal(p: z.infer<typeof profileSchema>): number {
@@ -350,9 +367,10 @@ app.get("/api/nutrition/profile", async (_req, res) => {
 
 app.post("/api/nutrition/profile", async (req, res) => {
   try {
+    console.log('[api] SAVE profile (POST) payload:', req.body);
     const data = profileSchema.parse(req.body);
     const target = computeTargetKcal(data);
-    const created = await prisma.nutritionProfile.create({ data: { ...data, lastTargetKcal: target } });
+    const created = await prisma.nutritionProfile.create({ data: { ...data, computedTargetKcal: target, lastTargetKcal: data.customTargetKcal ?? target } });
     res.status(201).json({ data: created });
   } catch (e: any) {
     res.status(400).json({ error: e?.message || "Invalid payload" });
@@ -362,9 +380,10 @@ app.post("/api/nutrition/profile", async (req, res) => {
 app.put("/api/nutrition/profile/:id", async (req, res) => {
   const { id } = req.params as { id: string };
   try {
+    console.log('[api] SAVE profile (PUT by id) payload:', req.body);
     const data = profileSchema.parse(req.body);
     const target = computeTargetKcal(data);
-    const updated = await prisma.nutritionProfile.update({ where: { id }, data: { ...data, lastTargetKcal: target } });
+    const updated = await prisma.nutritionProfile.update({ where: { id }, data: { ...data, computedTargetKcal: target, lastTargetKcal: data.customTargetKcal ?? target } });
     res.json({ data: updated });
   } catch (e: any) {
     res.status(400).json({ error: e?.message || "Invalid payload" });
@@ -374,12 +393,13 @@ app.put("/api/nutrition/profile/:id", async (req, res) => {
 // Upsert profile without needing id on the client
 app.put("/api/nutrition/profile", async (req, res) => {
   try {
+    console.log('[api] UPSERT profile (PUT) payload:', req.body);
     const data = profileSchema.parse(req.body);
     const target = computeTargetKcal(data);
     const existing = await prisma.nutritionProfile.findFirst({ orderBy: { updatedAt: "desc" } });
     const saved = existing
-      ? await prisma.nutritionProfile.update({ where: { id: existing.id }, data: { ...data, lastTargetKcal: target } })
-      : await prisma.nutritionProfile.create({ data: { ...data, lastTargetKcal: target } });
+      ? await prisma.nutritionProfile.update({ where: { id: existing.id }, data: { ...data, computedTargetKcal: target, lastTargetKcal: data.customTargetKcal ?? target } })
+      : await prisma.nutritionProfile.create({ data: { ...data, computedTargetKcal: target, lastTargetKcal: data.customTargetKcal ?? target } });
     res.json({ data: saved });
   } catch (e: any) {
     res.status(400).json({ error: e?.message || "Invalid payload" });
@@ -410,8 +430,8 @@ app.post("/api/nutrition/diary", async (req, res) => {
       fat_g: z.number().nonnegative().optional(),
       carbohydrates_g: z.number().nonnegative().optional(),
     });
-    const bodyText = typeof req.body === 'string' ? req.body : undefined;
-    const data = bodyText ? schema.parse(JSON.parse(bodyText)) : schema.parse(req.body);
+    console.log('[api] ADD diary entry payload:', req.body);
+    const data = schema.parse(req.body);
     const created = await prisma.mealEntry.create({
       data: {
         date: new Date(`${data.date}T12:00:00`),

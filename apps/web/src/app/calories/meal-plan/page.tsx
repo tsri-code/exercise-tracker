@@ -194,10 +194,10 @@ export default function MealPlanPage() {
           ))}
         </div>
 
-        {/* Right: search/add panel */}
+        {/* Right: macros pie chart */}
         <div className="card p-4">
-          <div className="text-sm text-white/80 mb-2">Tips</div>
-          <div className="text-xs text-white/60">Use the Search button under each meal to add foods.</div>
+          <div className="text-sm text-white/80 mb-2">Macros today</div>
+          <MacrosPie protein={totals.p} carbs={totals.c} fat={totals.f} />
         </div>
       </div>
 
@@ -238,6 +238,27 @@ export default function MealPlanPage() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function MacrosPie({ protein, carbs, fat }: { protein: number; carbs: number; fat: number }) {
+  const total = Math.max(0.0001, protein + carbs + fat);
+  const p = (protein / total) * 100;
+  const c = (carbs / total) * 100;
+  const f = (fat / total) * 100;
+  // Build conic-gradient for a simple pie chart without extra deps
+  const style = {
+    backgroundImage: `conic-gradient(#22d3ee 0 ${p}%, #a78bfa ${p}% ${p + c}%, #fbbf24 ${p + c}% 100%)`,
+  } as React.CSSProperties;
+  return (
+    <div className="flex items-center gap-4">
+      <div className="w-36 h-36 rounded-full" style={style} />
+      <div className="text-xs text-white/80 space-y-1">
+        <div><span className="inline-block w-2 h-2 rounded-sm align-middle mr-2" style={{background:'#22d3ee'}}></span>Protein: {Math.round(protein)} g ({Math.round(p)}%)</div>
+        <div><span className="inline-block w-2 h-2 rounded-sm align-middle mr-2" style={{background:'#a78bfa'}}></span>Carbs: {Math.round(carbs)} g ({Math.round(c)}%)</div>
+        <div><span className="inline-block w-2 h-2 rounded-sm align-middle mr-2" style={{background:'#fbbf24'}}></span>Fat: {Math.round(f)} g ({Math.round(f)}%)</div>
+      </div>
     </div>
   );
 }

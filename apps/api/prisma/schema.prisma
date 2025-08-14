@@ -62,7 +62,10 @@ model NutritionProfile {
   allergies        String?
   mealsPerDay      Int?
   proteinPerKg     Float?
-  lastTargetKcal   Int?
+  // targets
+  lastTargetKcal      Int?
+  computedTargetKcal  Int?
+  customTargetKcal    Int?
 }
 
 model MealEntry {
