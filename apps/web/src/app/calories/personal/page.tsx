@@ -38,6 +38,7 @@ export default function PersonalInfoPage() {
   const [saving, setSaving] = useState(false);
   const [target, setTarget] = useState<number | null>(null);
   const [custom, setCustom] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const toNumber = (v: string, fallback = 0) => {
     const n = parseFloat(v);
@@ -60,6 +61,10 @@ export default function PersonalInfoPage() {
 
   async function save() {
     if (saving) return;
+    if (custom != null && (custom < 800 || custom > 6000)) {
+      setError("Custom target must be between 800 and 6000 kcal");
+      return;
+    }
     setSaving(true);
     // Use idless upsert endpoint to avoid stale ids
     console.log("[web] Saving profile payload", profile);
@@ -403,7 +408,9 @@ export default function PersonalInfoPage() {
         <div className="mt-3">
           <button
             onClick={save}
-            disabled={saving}
+            disabled={
+              saving || (custom != null && (custom < 800 || custom > 6000))
+            }
             className="px-3 py-1 rounded-full text-xs font-semibold text-black bg-cyan-400 hover:bg-cyan-300 mr-2"
           >
             {saving ? "Saving…" : "Save profile"}
@@ -431,15 +438,23 @@ export default function PersonalInfoPage() {
         <label className="text-white/70">Custom daily target</label>
         <input
           type="number"
-          min={800}
-          max={6000}
-          value={(custom ?? '') as any}
+          value={(custom ?? "") as any}
           placeholder="e.g., 2300"
-          onChange={(e)=> setCustom(e.target.value === '' ? null : Math.max(800, Math.min(6000, parseInt(e.target.value||'0',10))))}
+          onChange={(e) => {
+            const v = e.target.value;
+            const n = v === "" ? null : parseInt(v, 10);
+            setCustom(Number.isFinite(n as any) ? (n as number) : null);
+            if (n != null && (n < 800 || n > 6000))
+              setError("Custom target must be between 800 and 6000 kcal");
+            else setError(null);
+          }}
           className="w-28 rounded bg-white/5 ring-1 ring-white/10 px-2 py-1"
         />
-        <span className="text-xs text-white/50">Overrides computed target on Meal Plan when set</span>
+        <span className="text-xs text-white/50">
+          Overrides computed target on Meal Plan when set
+        </span>
       </div>
+      {error && <div className="text-xs text-red-400">{error}</div>}
     </div>
   );
 }

@@ -112,7 +112,7 @@ export default function Page() {
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-xl font-semibold">Planner</h1>
+        <h1 className="text-3xl md:text-4xl font-extrabold headline">Planner</h1>
         <div className="flex items-center gap-2 text-sm">
           <button
             onClick={() => setMonth(addMonths(month, -1))}
@@ -144,7 +144,7 @@ export default function Page() {
         {grid.map((d) => (
           <div
             key={d.iso}
-            className={`rounded-md ring-1 ring-white/10 min-h-[110px] p-2 ${
+            className={`rounded-md ring-1 ring-white/10 min-h-[120px] p-2 ${
               d.inMonth ? "bg-white/5" : "bg-white/[0.03]"
             }`}
           >
@@ -152,7 +152,7 @@ export default function Page() {
               <span>{d.date.getDate()}</span>
               {d.inMonth && (
                 <button
-                  className="text-[11px] px-1 py-0.5 rounded bg-cyan-400 text-black font-semibold"
+                  className="text-[11px] px-1.5 py-0.5 rounded bg-cyan-400 text-black font-semibold"
                   onClick={() => setDraft((x) => ({ ...x, date: d.iso }))}
                 >
                   Add
@@ -187,8 +187,8 @@ export default function Page() {
         ))}
       </div>
 
-      <div className="card p-4">
-        <div className="text-sm text-white/80 mb-2">Schedule routine</div>
+      <div className="card p-5 md:p-6 glow">
+        <div className="text-base text-white/90 font-semibold mb-3">Schedule routine</div>
         <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 text-sm">
           <input
             type="date"
@@ -268,10 +268,10 @@ export default function Page() {
             ))}
           </div>
         )}
-        <div className="mt-2">
+        <div className="mt-3">
           <button
             onClick={createSchedule}
-            className="px-3 py-1 rounded-full text-xs font-semibold text-black bg-cyan-400 hover:bg-cyan-300"
+            className="px-4 py-1.5 rounded-full text-xs font-semibold text-black bg-cyan-400 hover:bg-cyan-300"
           >
             Add to calendar
           </button>
@@ -279,9 +279,9 @@ export default function Page() {
       </div>
 
       {edit && (
-        <div className="card p-4">
+        <div className="card p-5 md:p-6 glow">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-sm text-white/80">Edit reminder</div>
+            <div className="text-base text-white/90 font-semibold">Edit reminder</div>
             <button
               type="button"
               onClick={() => setEdit(null)}
@@ -379,14 +379,14 @@ export default function Page() {
             <button
               type="button"
               onClick={saveEdit}
-              className="px-3 py-1 rounded-full text-xs font-semibold text-black bg-cyan-400 hover:bg-cyan-300"
+              className="px-4 py-1.5 rounded-full text-xs font-semibold text-black bg-cyan-400 hover:bg-cyan-300"
             >
               Save
             </button>
             <button
               type="button"
               onClick={deleteEdit}
-              className="px-3 py-1 rounded-full text-xs font-semibold text-white bg-white/10 hover:bg-white/15"
+              className="px-4 py-1.5 rounded-full text-xs font-semibold text-white bg-white/10 hover:bg-white/15"
             >
               Delete
             </button>

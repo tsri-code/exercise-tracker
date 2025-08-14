@@ -27,10 +27,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gradient-to-br from-zinc-50 to-white text-gray-900`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[var(--background)] text-[var(--foreground)]`}
       >
         <TopNav />
-        <main className="mx-auto w-full max-w-6xl px-3 sm:px-4 py-6 sm:py-8 min-h-[calc(100dvh-64px)]">
+        <main className="mx-auto w-full max-w-7xl px-4 sm:px-6 py-8 sm:py-10 min-h-[calc(100dvh-80px)]">
           {children}
         </main>
       </body>

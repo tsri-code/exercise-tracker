@@ -21,7 +21,7 @@ export default async function Home() {
   return (
     <div className="relative min-h-[90vh]">
       <GradientBackground />
-      <main className="mx-auto max-w-6xl px-6 sm:px-8 pt-24 pb-28 text-center">
+      <main className="mx-auto max-w-7xl px-6 sm:px-8 pt-24 pb-28 text-center">
         <div className="inline-flex items-center gap-3 mb-6">
           <span className="text-2xl">水</span>
         </div>
@@ -32,8 +32,8 @@ export default async function Home() {
           Build smarter routines, log sets and reps, and progress week by week. Designed for people who love the grind.
         </p>
         <div className="mt-10 flex items-center justify-center gap-4">
-          <a href="/planner" className="px-6 py-3 rounded-full text-sm font-semibold text-black bg-cyan-400 hover:bg-cyan-300 transition-colors">Open planner</a>
-          <a href="/workouts" className="px-6 py-3 rounded-full text-sm font-semibold text-white/90 ring-1 ring-white/15 hover:bg-white/5 transition-colors">View workouts</a>
+          <a href="/planner" className="btn btn-primary px-6 py-3 text-sm">Open planner</a>
+          <a href="/workouts" className="btn btn-ghost px-6 py-3 text-sm">View workouts</a>
         </div>
         <div className="mt-16 flex items-center justify-center gap-6">
           <Image className="rounded-2xl shadow-lg" src="/next.svg" alt="" width={80} height={40} />

@@ -176,8 +176,8 @@ export default function Page() {
 
   return (
     <div className="space-y-6">
-      <div className="card p-6">
-        <h1 className="text-xl font-semibold mb-4">Create workout</h1>
+      <div className="card p-6 glow">
+        <h1 className="text-3xl md:text-4xl font-extrabold headline mb-4">Create workout</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <input
             value={title}
@@ -272,14 +272,14 @@ export default function Page() {
                     <button
                       type="button"
                       onClick={() => addSetRow(idx)}
-                      className="px-2 py-1 rounded-md text-xs font-semibold text-black bg-cyan-400 hover:bg-cyan-300"
+                      className="px-3 py-1.5 rounded-md text-xs font-semibold text-black bg-cyan-400 hover:bg-cyan-300"
                     >
                       Add set
                     </button>
                     <button
                       type="button"
                       onClick={() => removeItem(idx)}
-                      className="px-2 py-1 rounded-md text-xs text-white/70 hover:bg-white/10"
+                      className="px-2.5 py-1.5 rounded-md text-xs text-white/70 hover:bg-white/10"
                     >
                       Remove
                     </button>

@@ -113,7 +113,7 @@ export default function RoutineEditor({
         <input
           value={routine.title}
           onChange={(e) => updateTitle(e.target.value)}
-          className="rounded-md bg-white/5 ring-1 ring-white/10 px-3 py-2 text-sm text-white"
+          className="rounded-md bg-white/5 ring-1 ring-white/10 px-3 py-2 text-base text-white"
         />
             <div className="flex flex-wrap items-center gap-2">
           <Link
@@ -124,13 +124,13 @@ export default function RoutineEditor({
           </Link>
           <button
             onClick={addExercise}
-            className="px-3 py-1 rounded-full text-xs font-semibold text-black bg-cyan-400 hover:bg-cyan-300"
+            className="px-4 py-1.5 rounded-full text-xs font-semibold text-black bg-cyan-400 hover:bg-cyan-300"
           >
             Add exercise
           </button>
           <button
             onClick={save}
-            className="px-3 py-1 rounded-full text-xs font-semibold text-black bg-cyan-400 hover:bg-cyan-300"
+            className="px-4 py-1.5 rounded-full text-xs font-semibold text-black bg-cyan-400 hover:bg-cyan-300"
             disabled={saving}
           >
             {saving ? "Saving…" : "Save"}
@@ -141,7 +141,7 @@ export default function RoutineEditor({
         {routine.items.map((it, idx) => (
           <div
             key={it.id}
-            className="p-3 rounded-md bg-white/5 ring-1 ring-white/10"
+            className="p-4 rounded-md bg-white/5 ring-1 ring-white/10"
           >
             <div className="flex items-center justify-between">
               <input
@@ -155,24 +155,24 @@ export default function RoutineEditor({
                     return { ...r, items };
                   });
                 }}
-                className="text-sm bg-transparent outline-none text-white"
+                className="text-base bg-transparent outline-none text-white"
               />
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => move(idx, -1)}
-                  className="text-xs text-white/70 hover:bg-white/10 px-2 py-1 rounded"
+                  className="text-xs text-white/70 hover:bg-white/10 px-2.5 py-1.5 rounded"
                 >
                   Up
                 </button>
                 <button
                   onClick={() => move(idx, 1)}
-                  className="text-xs text-white/70 hover:bg-white/10 px-2 py-1 rounded"
+                  className="text-xs text-white/70 hover:bg-white/10 px-2.5 py-1.5 rounded"
                 >
                   Down
                 </button>
                 <button
                   onClick={() => removeExercise(idx)}
-                  className="text-xs text-white/70 hover:bg-white/10 px-2 py-1 rounded"
+                  className="text-xs text-white/70 hover:bg-white/10 px-2.5 py-1.5 rounded"
                 >
                   Remove
                 </button>
@@ -194,7 +194,7 @@ export default function RoutineEditor({
                         parseInt(e.target.value || "0", 10)
                       )
                     }
-                    className="w-20 rounded-md bg-white/5 ring-1 ring-white/10 px-2 py-1 text-sm text-white"
+                    className="w-24 rounded-md bg-white/5 ring-1 ring-white/10 px-2 py-1 text-sm text-white"
                   />
                   <input
                     type="number"
@@ -209,7 +209,7 @@ export default function RoutineEditor({
                         parseFloat(e.target.value || "0")
                       )
                     }
-                    className="w-24 rounded-md bg-white/5 ring-1 ring-white/10 px-2 py-1 text-sm text-white"
+                    className="w-28 rounded-md bg-white/5 ring-1 ring-white/10 px-2 py-1 text-sm text-white"
                   />
                 </div>
               ))}

@@ -35,16 +35,20 @@ export default function MealPlanPage() {
   const [target, setTarget] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState<null | { meal: string }>(null);
   const [qty, setQty] = useState<number>(100);
-  const [unit, setUnit] = useState<string>('g');
+  const [unit, setUnit] = useState<string>("g");
 
   useEffect(() => {
     (async () => {
       // load diary
-      const res = await fetch(`${API_BASE_URL}/api/nutrition/diary?date=${date}`);
+      const res = await fetch(
+        `${API_BASE_URL}/api/nutrition/diary?date=${date}`
+      );
       const json = await res.json();
       setEntries(json.data || []);
       // load target from profile
-      const p = await fetch(`${API_BASE_URL}/api/nutrition/profile`).then((r) => r.json());
+      const p = await fetch(`${API_BASE_URL}/api/nutrition/profile`).then((r) =>
+        r.json()
+      );
       const prof = p.data;
       if (prof) {
         if (prof.lastTargetKcal) setTarget(prof.lastTargetKcal);
@@ -56,9 +60,12 @@ export default function MealPlanPage() {
   // When user updates Personal Info and returns, reflect new goal automatically
   useEffect(() => {
     const id = setInterval(async () => {
-      const p = await fetch(`${API_BASE_URL}/api/nutrition/profile`).then((r) => r.json()).catch(()=>null);
+      const p = await fetch(`${API_BASE_URL}/api/nutrition/profile`)
+        .then((r) => r.json())
+        .catch(() => null);
       const prof = p?.data;
-      if (prof) setTarget(prof.lastTargetKcal ?? computeTargetFromProfile(prof));
+      if (prof)
+        setTarget(prof.lastTargetKcal ?? computeTargetFromProfile(prof));
     }, 5000);
     return () => clearInterval(id);
   }, []);
@@ -79,7 +86,9 @@ export default function MealPlanPage() {
 
   async function search() {
     if (!query.trim()) return setResults([]);
-    const r = await fetch(`${API_BASE_URL}/api/nutrition/search?q=${encodeURIComponent(query)}`);
+    const r = await fetch(
+      `${API_BASE_URL}/api/nutrition/search?q=${encodeURIComponent(query)}`
+    );
     const j = await r.json();
     setResults(j.data || []);
   }
@@ -87,13 +96,20 @@ export default function MealPlanPage() {
   function toGrams(amount: number, u: string): number {
     const a = isFinite(amount) ? amount : 0;
     switch (u) {
-      case 'g': return a;
-      case 'ml': return a; // approximate water density
-      case 'oz': return a * 28.3495;
-      case 'cup': return a * 240;
-      case 'tbsp': return a * 15;
-      case 'tsp': return a * 5;
-      default: return a;
+      case "g":
+        return a;
+      case "ml":
+        return a; // approximate water density
+      case "oz":
+        return a * 28.3495;
+      case "cup":
+        return a * 240;
+      case "tbsp":
+        return a * 15;
+      case "tsp":
+        return a * 5;
+      default:
+        return a;
     }
   }
 
@@ -127,7 +143,9 @@ export default function MealPlanPage() {
   }
 
   async function removeEntry(id: string) {
-    await fetch(`${API_BASE_URL}/api/nutrition/diary/${id}`, { method: "DELETE" });
+    await fetch(`${API_BASE_URL}/api/nutrition/diary/${id}`, {
+      method: "DELETE",
+    });
     setEntries((e) => e.filter((x) => x.id !== id));
   }
 
@@ -135,27 +153,27 @@ export default function MealPlanPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3">
+      <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold">Calorie Counter • Meal Plan</h1>
-          <div className="text-sm text-white/60">{date}</div>
+          <h1 className="text-3xl md:text-4xl font-extrabold headline">Calorie Counter • Meal Plan</h1>
+          <div className="text-sm text-white/60 mt-1">{date}</div>
         </div>
-        <div className="flex gap-2 items-center flex-wrap">
-          <input type="date" value={date} onChange={(e)=> setDate(e.target.value)} className="rounded bg-white/5 ring-1 ring-white/10 px-2 py-1 text-sm" />
+        <div className="flex gap-3 items-center flex-wrap">
+          <input type="date" value={date} onChange={(e)=> setDate(e.target.value)} className="rounded bg-white/5 ring-1 ring-white/10 px-3 py-2 text-sm" />
           {target != null && (
-            <div className="rounded-md bg-white/5 ring-1 ring-white/10 px-3 py-2 text-xs">
+            <div className="stat-chip px-4 py-3 text-xs">
               <div className="text-white/70">Goal</div>
-              <div className="text-white font-semibold">{target} kcal</div>
+              <div className="text-white font-semibold text-base">{target} kcal</div>
             </div>
           )}
-          <div className="rounded-md bg-white/5 ring-1 ring-white/10 px-3 py-2 text-xs">
+          <div className="stat-chip px-4 py-3 text-xs">
             <div className="text-white/70">Eaten</div>
-            <div className="text-white font-semibold">{Math.round(totals.cal)} kcal</div>
+            <div className="text-white font-semibold text-base">{Math.round(totals.cal)} kcal</div>
           </div>
           {remaining != null && (
-            <div className="rounded-md bg-white/5 ring-1 ring-white/10 px-3 py-2 text-xs">
+            <div className="stat-chip px-4 py-3 text-xs">
               <div className="text-white/70">Remaining</div>
-              <div className="text-white font-semibold">{remaining} kcal</div>
+              <div className="text-white font-semibold text-base">{remaining} kcal</div>
             </div>
           )}
           {target != null && (
@@ -164,29 +182,41 @@ export default function MealPlanPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Left: diary columns */}
-        <div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="xl:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
           {meals.map((m) => (
-            <div key={m} className="card p-4">
-              <div className="text-white font-semibold capitalize mb-2">{m}</div>
-              <div className="mb-2 flex items-center justify-between text-xs text-white/70">
-                <button onClick={()=> { setModalOpen({ meal: m }); setResults([]); setQuery(""); }} className="px-2 py-1 rounded-full bg-white/10 hover:bg-white/15">Search</button>
+            <div key={m} className="card p-5 md:p-6 glow">
+              <div className="text-white font-semibold capitalize mb-3 text-lg">{m}</div>
+              <div className="mb-3 flex items-center justify-between text-xs text-white/70">
+                <button onClick={()=> { setModalOpen({ meal: m }); setResults([]); setQuery(""); }} className="px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/15">Search</button>
                 <div>
-                  {Math.round(entries.filter(e=>e.meal===m).reduce((s,e)=> s+e.calories,0))} kcal
+                  {Math.round(
+                    entries
+                      .filter((e) => e.meal === m)
+                      .reduce((s, e) => s + e.calories, 0)
+                  )}{" "}
+                  kcal
                 </div>
               </div>
               <div className="space-y-2">
-                {entries.filter((e) => e.meal === m).map((e) => (
-                  <div key={e.id} className="flex items-center justify-between rounded bg-white/5 ring-1 ring-white/10 px-3 py-2 text-sm">
-                    <div className="truncate">
-                      <div className="text-white truncate">{e.foodName}</div>
-                      <div className="text-white/60 text-xs">{e.quantityGrams} g • {Math.round(e.calories)} kcal</div>
+                {entries
+                  .filter((e) => e.meal === m)
+                  .map((e) => (
+                    <div
+                      key={e.id}
+                      className="flex items-center justify-between rounded bg-white/5 ring-1 ring-white/10 px-3 py-2 text-sm"
+                    >
+                      <div className="truncate">
+                        <div className="text-white truncate">{e.foodName}</div>
+                        <div className="text-white/60 text-xs">
+                          {e.quantityGrams} g • {Math.round(e.calories)} kcal
+                        </div>
+                      </div>
+                      <button onClick={()=> removeEntry(e.id)} className="text-xs text-white/70 hover:underline">Remove</button>
                     </div>
-                    <button onClick={()=> removeEntry(e.id)} className="text-xs text-white/70 hover:underline">Remove</button>
-                  </div>
-                ))}
-                {entries.filter((e)=> e.meal === m).length === 0 && (
+                  ))}
+                {entries.filter((e) => e.meal === m).length === 0 && (
                   <div className="text-xs text-white/50">No items yet.</div>
                 )}
               </div>
@@ -195,22 +225,22 @@ export default function MealPlanPage() {
         </div>
 
         {/* Right: macros pie chart */}
-        <div className="card p-4">
-          <div className="text-sm text-white/80 mb-2">Macros today</div>
+        <div className="card p-5 md:p-6 glow">
+          <div className="text-base md:text-lg text-white/90 font-semibold mb-3">Macros today</div>
           <MacrosPie protein={totals.p} carbs={totals.c} fat={totals.f} />
         </div>
       </div>
 
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-2xl rounded-lg bg-black/80 ring-1 ring-white/10 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-2xl rounded-2xl bg-black/80 ring-1 ring-white/10 p-5 md:p-6">
             <div className="flex items-center justify-between">
-              <div className="text-white font-semibold">Add to {modalOpen.meal}</div>
+              <div className="text-white font-semibold text-lg">Add to {modalOpen.meal}</div>
               <button className="text-white/70 text-sm" onClick={()=> setModalOpen(null)}>Close</button>
             </div>
             <div className="mt-3 flex gap-2">
-              <input value={query} onChange={(e)=> setQuery(e.target.value)} placeholder="Search foods (e.g., salmon)" className="flex-1 rounded bg-white/5 ring-1 ring-white/10 px-2 py-1 text-sm" />
-              <button onClick={search} className="px-3 py-1 rounded-full text-xs font-semibold text-black bg-cyan-400 hover:bg-cyan-300">Search</button>
+              <input value={query} onChange={(e)=> setQuery(e.target.value)} placeholder="Search foods (e.g., salmon)" className="flex-1 rounded bg-white/5 ring-1 ring-white/10 px-3 py-2 text-sm" />
+              <button onClick={search} className="px-4 py-2 rounded-full text-xs font-semibold text-black bg-cyan-400 hover:bg-cyan-300">Search</button>
             </div>
             <div className="mt-3 max-h-[60vh] overflow-y-auto space-y-2 pr-1">
               {results.map((f)=> (
@@ -218,7 +248,7 @@ export default function MealPlanPage() {
                   <div className="text-sm text-white">{f.name}</div>
                   <div className="text-xs text-white/60">{f.serving_size_g} g • {Math.round(f.calories)} kcal • P {Math.round(f.protein_g||0)}g • C {Math.round(f.carbohydrates_total_g||0)}g • F {Math.round(f.fat_total_g||0)}g</div>
                   <div className="mt-2 flex items-center gap-2">
-                    <input type="number" min={0} step={1} value={qty} onChange={(e)=> setQty(parseFloat(e.target.value||'0'))} className="w-24 rounded bg-white/5 ring-1 ring-white/10 px-2 py-1 text-xs" />
+                    <input type="number" min={0} step={1} value={qty} onChange={(e)=> setQty(parseFloat(e.target.value||'0'))} className="w-28 rounded bg-white/5 ring-1 ring-white/10 px-3 py-2 text-xs" />
                     <select value={unit} onChange={(e)=> setUnit(e.target.value)} className="rounded bg-white/5 ring-1 ring-white/10 px-2 py-1 text-xs">
                       <option value="g">g</option>
                       <option value="oz">oz</option>
@@ -227,7 +257,7 @@ export default function MealPlanPage() {
                       <option value="tsp">tsp</option>
                       <option value="ml">ml</option>
                     </select>
-                    <button type="button" onClick={()=> addFood(f, modalOpen.meal)} className="px-2 py-1 rounded-full text-[11px] font-semibold text-black bg-cyan-400 hover:bg-cyan-300">Add</button>
+                    <button type="button" onClick={()=> addFood(f, modalOpen.meal)} className="px-3 py-1.5 rounded-full text-[11px] font-semibold text-black bg-cyan-400 hover:bg-cyan-300">Add</button>
                   </div>
                 </div>
               ))}
@@ -242,22 +272,50 @@ export default function MealPlanPage() {
   );
 }
 
-function MacrosPie({ protein, carbs, fat }: { protein: number; carbs: number; fat: number }) {
+function MacrosPie({
+  protein,
+  carbs,
+  fat,
+}: {
+  protein: number;
+  carbs: number;
+  fat: number;
+}) {
   const total = Math.max(0.0001, protein + carbs + fat);
   const p = (protein / total) * 100;
   const c = (carbs / total) * 100;
   const f = (fat / total) * 100;
   // Build conic-gradient for a simple pie chart without extra deps
   const style = {
-    backgroundImage: `conic-gradient(#22d3ee 0 ${p}%, #a78bfa ${p}% ${p + c}%, #fbbf24 ${p + c}% 100%)`,
+    backgroundImage: `conic-gradient(#22d3ee 0 ${p}%, #a78bfa ${p}% ${
+      p + c
+    }%, #fbbf24 ${p + c}% 100%)`,
   } as React.CSSProperties;
   return (
     <div className="flex items-center gap-4">
       <div className="w-36 h-36 rounded-full" style={style} />
       <div className="text-xs text-white/80 space-y-1">
-        <div><span className="inline-block w-2 h-2 rounded-sm align-middle mr-2" style={{background:'#22d3ee'}}></span>Protein: {Math.round(protein)} g ({Math.round(p)}%)</div>
-        <div><span className="inline-block w-2 h-2 rounded-sm align-middle mr-2" style={{background:'#a78bfa'}}></span>Carbs: {Math.round(carbs)} g ({Math.round(c)}%)</div>
-        <div><span className="inline-block w-2 h-2 rounded-sm align-middle mr-2" style={{background:'#fbbf24'}}></span>Fat: {Math.round(f)} g ({Math.round(f)}%)</div>
+        <div>
+          <span
+            className="inline-block w-2 h-2 rounded-sm align-middle mr-2"
+            style={{ background: "#22d3ee" }}
+          ></span>
+          Protein: {Math.round(protein)} g ({Math.round(p)}%)
+        </div>
+        <div>
+          <span
+            className="inline-block w-2 h-2 rounded-sm align-middle mr-2"
+            style={{ background: "#a78bfa" }}
+          ></span>
+          Carbs: {Math.round(carbs)} g ({Math.round(c)}%)
+        </div>
+        <div>
+          <span
+            className="inline-block w-2 h-2 rounded-sm align-middle mr-2"
+            style={{ background: "#fbbf24" }}
+          ></span>
+          Fat: {Math.round(f)} g ({Math.round(f)}%)
+        </div>
       </div>
     </div>
   );
@@ -276,24 +334,32 @@ function computeTargetFromProfile(p: any): number | null {
     very: 1.725,
     athlete: 1.9,
   };
-  const weightKg = p.weightUnit === 'kg' ? p.weightValue : p.weightValue * LB_TO_KG;
-  const heightCm = p.heightUnit === 'cm' ? p.heightValue : p.heightValue * IN_TO_CM;
+  const weightKg =
+    p.weightUnit === "kg" ? p.weightValue : p.weightValue * LB_TO_KG;
+  const heightCm =
+    p.heightUnit === "cm" ? p.heightValue : p.heightValue * IN_TO_CM;
   let BMR: number;
-  if (typeof p.bodyFatPercent === 'number') {
+  if (typeof p.bodyFatPercent === "number") {
     const lbmKg = weightKg * (1 - p.bodyFatPercent / 100);
     BMR = 370 + 21.6 * lbmKg;
   } else {
-    const sexCoeff = p.gender === 'male' ? 5 : -161;
+    const sexCoeff = p.gender === "male" ? 5 : -161;
     BMR = 10 * weightKg + 6.25 * heightCm - 5 * p.age + sexCoeff;
   }
   const TDEE = BMR * (PAL[p.activityLevel] ?? 1.55);
-  const weeklyDeltaLb = p.goal === 'recomp' ? 0 : (p.goal === 'gain' ? Math.abs(p.rateLbsPerWeek) : -Math.abs(p.rateLbsPerWeek));
+  const weeklyDeltaLb =
+    p.goal === "recomp"
+      ? 0
+      : p.goal === "gain"
+      ? Math.abs(p.rateLbsPerWeek)
+      : -Math.abs(p.rateLbsPerWeek);
   const dailyAdjust = (weeklyDeltaLb * KCAL_PER_LB) / 7.0;
   let targetKcal = TDEE + dailyAdjust;
   const maxDeficit = 0.25 * TDEE;
   const maxSurplus = 0.15 * TDEE;
-  targetKcal = Math.max(TDEE - maxDeficit, Math.min(TDEE + maxSurplus, targetKcal));
+  targetKcal = Math.max(
+    TDEE - maxDeficit,
+    Math.min(TDEE + maxSurplus, targetKcal)
+  );
   return Math.round(targetKcal);
 }
-
-

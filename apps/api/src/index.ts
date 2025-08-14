@@ -13,7 +13,7 @@ app.use(express.json());
 
 // Basic request logger for debugging
 app.use((req, _res, next) => {
-  if (req.path.startsWith('/api/nutrition')) {
+  if (req.path.startsWith("/api/nutrition")) {
     console.log(`[api] ${req.method} ${req.path}`);
   }
   next();
@@ -21,12 +21,19 @@ app.use((req, _res, next) => {
 
 // Graceful JSON parse error handler
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
-  if (err && err.type === 'entity.parse.failed') {
-    return res.status(400).json({ error: 'Invalid JSON body' });
+app.use(
+  (
+    err: any,
+    _req: express.Request,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    if (err && err.type === "entity.parse.failed") {
+      return res.status(400).json({ error: "Invalid JSON body" });
+    }
+    return next(err);
   }
-  return next(err);
-});
+);
 
 const prisma = new PrismaClient();
 
@@ -317,12 +324,20 @@ const profileSchema = z.object({
   gender: z.enum(["male", "female", "other"]).default("other"),
   goal: z.enum(["recomp", "lose", "gain"]),
   rateLbsPerWeek: z.number().min(-2).max(2).default(0),
-  activityLevel: z.enum(["sedentary", "light", "moderate", "active", "very", "athlete"]),
+  activityLevel: z.enum([
+    "sedentary",
+    "light",
+    "moderate",
+    "active",
+    "very",
+    "athlete",
+  ]),
   bodyFatPercent: z.number().min(0).max(75).nullable().optional(),
   dietaryPreference: z.string().nullable().optional(),
   allergies: z.string().nullable().optional(),
   mealsPerDay: z.number().int().min(1).max(10).nullable().optional(),
   proteinPerKg: z.number().min(0).max(3).nullable().optional(),
+  customTargetKcal: z.number().int().positive().nullable().optional(),
   lastTargetKcal: z.number().int().positive().nullable().optional(),
 });
 
@@ -338,8 +353,10 @@ function computeTargetKcal(p: z.infer<typeof profileSchema>): number {
     very: 1.725,
     athlete: 1.9,
   };
-  const weightKg = p.weightUnit === "kg" ? p.weightValue : p.weightValue * LB_TO_KG;
-  const heightCm = p.heightUnit === "cm" ? p.heightValue : p.heightValue * IN_TO_CM;
+  const weightKg =
+    p.weightUnit === "kg" ? p.weightValue : p.weightValue * LB_TO_KG;
+  const heightCm =
+    p.heightUnit === "cm" ? p.heightValue : p.heightValue * IN_TO_CM;
   let BMR: number;
   if (typeof p.bodyFatPercent === "number") {
     const lbmKg = weightKg * (1 - p.bodyFatPercent / 100);
@@ -349,12 +366,20 @@ function computeTargetKcal(p: z.infer<typeof profileSchema>): number {
     BMR = 10 * weightKg + 6.25 * heightCm - 5 * p.age + sexCoeff;
   }
   const TDEE = BMR * (PAL[p.activityLevel] ?? 1.55);
-  const weeklyDeltaLb = p.goal === "recomp" ? 0 : (p.goal === "gain" ? Math.abs(p.rateLbsPerWeek) : -Math.abs(p.rateLbsPerWeek));
+  const weeklyDeltaLb =
+    p.goal === "recomp"
+      ? 0
+      : p.goal === "gain"
+      ? Math.abs(p.rateLbsPerWeek)
+      : -Math.abs(p.rateLbsPerWeek);
   const dailyAdjust = (weeklyDeltaLb * KCAL_PER_LB) / 7.0;
   let targetKcal = TDEE + dailyAdjust;
   const maxDeficit = 0.25 * TDEE;
   const maxSurplus = 0.15 * TDEE;
-  targetKcal = Math.max(TDEE - maxDeficit, Math.min(TDEE + maxSurplus, targetKcal));
+  targetKcal = Math.max(
+    TDEE - maxDeficit,
+    Math.min(TDEE + maxSurplus, targetKcal)
+  );
   return Math.round(targetKcal);
 }
 
@@ -367,10 +392,16 @@ app.get("/api/nutrition/profile", async (_req, res) => {
 
 app.post("/api/nutrition/profile", async (req, res) => {
   try {
-    console.log('[api] SAVE profile (POST) payload:', req.body);
+    console.log("[api] SAVE profile (POST) payload:", req.body);
     const data = profileSchema.parse(req.body);
     const target = computeTargetKcal(data);
-    const created = await prisma.nutritionProfile.create({ data: { ...data, computedTargetKcal: target, lastTargetKcal: data.customTargetKcal ?? target } });
+    const created = await prisma.nutritionProfile.create({
+      data: {
+        ...data,
+        computedTargetKcal: target,
+        lastTargetKcal: data.customTargetKcal ?? target,
+      },
+    });
     res.status(201).json({ data: created });
   } catch (e: any) {
     res.status(400).json({ error: e?.message || "Invalid payload" });
@@ -380,10 +411,17 @@ app.post("/api/nutrition/profile", async (req, res) => {
 app.put("/api/nutrition/profile/:id", async (req, res) => {
   const { id } = req.params as { id: string };
   try {
-    console.log('[api] SAVE profile (PUT by id) payload:', req.body);
+    console.log("[api] SAVE profile (PUT by id) payload:", req.body);
     const data = profileSchema.parse(req.body);
     const target = computeTargetKcal(data);
-    const updated = await prisma.nutritionProfile.update({ where: { id }, data: { ...data, computedTargetKcal: target, lastTargetKcal: data.customTargetKcal ?? target } });
+    const updated = await prisma.nutritionProfile.update({
+      where: { id },
+      data: {
+        ...data,
+        computedTargetKcal: target,
+        lastTargetKcal: data.customTargetKcal ?? target,
+      },
+    });
     res.json({ data: updated });
   } catch (e: any) {
     res.status(400).json({ error: e?.message || "Invalid payload" });
@@ -393,13 +431,28 @@ app.put("/api/nutrition/profile/:id", async (req, res) => {
 // Upsert profile without needing id on the client
 app.put("/api/nutrition/profile", async (req, res) => {
   try {
-    console.log('[api] UPSERT profile (PUT) payload:', req.body);
+    console.log("[api] UPSERT profile (PUT) payload:", req.body);
     const data = profileSchema.parse(req.body);
     const target = computeTargetKcal(data);
-    const existing = await prisma.nutritionProfile.findFirst({ orderBy: { updatedAt: "desc" } });
+    const existing = await prisma.nutritionProfile.findFirst({
+      orderBy: { updatedAt: "desc" },
+    });
     const saved = existing
-      ? await prisma.nutritionProfile.update({ where: { id: existing.id }, data: { ...data, computedTargetKcal: target, lastTargetKcal: data.customTargetKcal ?? target } })
-      : await prisma.nutritionProfile.create({ data: { ...data, computedTargetKcal: target, lastTargetKcal: data.customTargetKcal ?? target } });
+      ? await prisma.nutritionProfile.update({
+          where: { id: existing.id },
+          data: {
+            ...data,
+            computedTargetKcal: target,
+            lastTargetKcal: data.customTargetKcal ?? target,
+          },
+        })
+      : await prisma.nutritionProfile.create({
+          data: {
+            ...data,
+            computedTargetKcal: target,
+            lastTargetKcal: data.customTargetKcal ?? target,
+          },
+        });
     res.json({ data: saved });
   } catch (e: any) {
     res.status(400).json({ error: e?.message || "Invalid payload" });
@@ -408,7 +461,9 @@ app.put("/api/nutrition/profile", async (req, res) => {
 
 // Calories diary CRUD
 app.get("/api/nutrition/diary", async (req, res) => {
-  const dateStr = String(req.query.date || new Date().toISOString().slice(0, 10));
+  const dateStr = String(
+    req.query.date || new Date().toISOString().slice(0, 10)
+  );
   const start = new Date(`${dateStr}T00:00:00`);
   const end = new Date(`${dateStr}T23:59:59`);
   const items = await prisma.mealEntry.findMany({
@@ -430,7 +485,7 @@ app.post("/api/nutrition/diary", async (req, res) => {
       fat_g: z.number().nonnegative().optional(),
       carbohydrates_g: z.number().nonnegative().optional(),
     });
-    console.log('[api] ADD diary entry payload:', req.body);
+    console.log("[api] ADD diary entry payload:", req.body);
     const data = schema.parse(req.body);
     const created = await prisma.mealEntry.create({
       data: {
@@ -461,9 +516,12 @@ app.delete("/api/nutrition/diary/:id", async (req, res) => {
 app.get("/api/nutrition/search", async (req, res) => {
   const q = String(req.query.q || "").trim();
   if (!q) return res.status(400).json({ error: "Missing q" });
-  const key = process.env.EXERCISES_API_KEY || process.env.NUTRITION_API_KEY || "";
+  const key =
+    process.env.EXERCISES_API_KEY || process.env.NUTRITION_API_KEY || "";
   if (!key) return res.status(500).json({ error: "Missing API key" });
-  const url = `https://api.api-ninjas.com/v1/nutrition?query=${encodeURIComponent(q)}`;
+  const url = `https://api.api-ninjas.com/v1/nutrition?query=${encodeURIComponent(
+    q
+  )}`;
   const r = await fetch(url, { headers: { "X-Api-Key": key } });
   if (!r.ok) return res.status(r.status).json({ error: await r.text() });
   const data = await r.json();
