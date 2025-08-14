@@ -301,14 +301,47 @@ const profileSchema = z.object({
   goal: z.enum(["recomp", "lose", "gain"]),
   rateLbsPerWeek: z.number().min(-2).max(2).default(0),
   activityLevel: z
-    .enum(["sedentary", "light", "moderate", "active", "very"]) 
+    .enum(["sedentary", "light", "moderate", "active", "very", "athlete"]) 
     .default("moderate"),
   bodyFatPercent: z.number().min(0).max(75).optional(),
   dietaryPreference: z.string().optional(),
   allergies: z.string().optional(),
   mealsPerDay: z.number().int().min(1).max(10).optional(),
   proteinPerKg: z.number().min(0).max(3).optional(),
+  lastTargetKcal: z.number().int().positive().optional(),
 });
+
+function computeTargetKcal(p: z.infer<typeof profileSchema>): number {
+  const LB_TO_KG = 0.45359237;
+  const IN_TO_CM = 2.54;
+  const KCAL_PER_LB = 3500.0;
+  const PAL: Record<string, number> = {
+    sedentary: 1.2,
+    light: 1.375,
+    moderate: 1.55,
+    active: 1.725,
+    very: 1.725,
+    athlete: 1.9,
+  };
+  const weightKg = p.weightUnit === "kg" ? p.weightValue : p.weightValue * LB_TO_KG;
+  const heightCm = p.heightUnit === "cm" ? p.heightValue : p.heightValue * IN_TO_CM;
+  let BMR: number;
+  if (typeof p.bodyFatPercent === "number") {
+    const lbmKg = weightKg * (1 - p.bodyFatPercent / 100);
+    BMR = 370 + 21.6 * lbmKg;
+  } else {
+    const sexCoeff = p.gender === "male" ? 5 : -161;
+    BMR = 10 * weightKg + 6.25 * heightCm - 5 * p.age + sexCoeff;
+  }
+  const TDEE = BMR * (PAL[p.activityLevel] ?? 1.55);
+  const weeklyDeltaLb = p.goal === "recomp" ? 0 : (p.goal === "gain" ? Math.abs(p.rateLbsPerWeek) : -Math.abs(p.rateLbsPerWeek));
+  const dailyAdjust = (weeklyDeltaLb * KCAL_PER_LB) / 7.0;
+  let targetKcal = TDEE + dailyAdjust;
+  const maxDeficit = 0.25 * TDEE;
+  const maxSurplus = 0.15 * TDEE;
+  targetKcal = Math.max(TDEE - maxDeficit, Math.min(TDEE + maxSurplus, targetKcal));
+  return Math.round(targetKcal);
+}
 
 app.get("/api/nutrition/profile", async (_req, res) => {
   const profile = await prisma.nutritionProfile.findFirst({
@@ -320,7 +353,8 @@ app.get("/api/nutrition/profile", async (_req, res) => {
 app.post("/api/nutrition/profile", async (req, res) => {
   try {
     const data = profileSchema.parse(req.body);
-    const created = await prisma.nutritionProfile.create({ data });
+    const target = computeTargetKcal(data);
+    const created = await prisma.nutritionProfile.create({ data: { ...data, lastTargetKcal: target } });
     res.status(201).json({ data: created });
   } catch (e: any) {
     res.status(400).json({ error: e?.message || "Invalid payload" });
@@ -331,7 +365,8 @@ app.put("/api/nutrition/profile/:id", async (req, res) => {
   const { id } = req.params as { id: string };
   try {
     const data = profileSchema.parse(req.body);
-    const updated = await prisma.nutritionProfile.update({ where: { id }, data });
+    const target = computeTargetKcal(data);
+    const updated = await prisma.nutritionProfile.update({ where: { id }, data: { ...data, lastTargetKcal: target } });
     res.json({ data: updated });
   } catch (e: any) {
     res.status(400).json({ error: e?.message || "Invalid payload" });

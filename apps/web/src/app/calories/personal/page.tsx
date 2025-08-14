@@ -61,17 +61,7 @@ export default function PersonalInfoPage() {
     const json = await res.json();
     if (json?.data) setProfile(json.data);
     setSaving(false);
-    // store last target on profile for meal plan page
-    const kcal = computeTarget();
-    try {
-      if (profile.id && kcal) {
-        await fetch(`${API_BASE_URL}/api/nutrition/profile/${profile.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...profile, lastTargetKcal: Math.round(kcal) }),
-        });
-      }
-    } catch {}
+    computeTarget();
   }
 
   function computeTarget() {
@@ -158,6 +148,7 @@ export default function PersonalInfoPage() {
             <option value="moderate">Moderate</option>
             <option value="active">Active</option>
             <option value="very">Very Active</option>
+            <option value="athlete">Athlete</option>
           </select>
 
           <select className="rounded bg-white/5 ring-1 ring-white/10 px-2 py-1" value={profile.goal}

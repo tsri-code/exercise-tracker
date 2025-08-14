@@ -33,6 +33,7 @@ export default function MealPlanPage() {
   const [results, setResults] = useState<Food[]>([]);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [target, setTarget] = useState<number | null>(null);
+  const [modalOpen, setModalOpen] = useState<null | { meal: string }>(null);
 
   useEffect(() => {
     (async () => {
@@ -88,6 +89,7 @@ export default function MealPlanPage() {
     const res = await fetch(`${API_BASE_URL}/api/nutrition/diary?date=${date}`);
     const json = await res.json();
     setEntries(json.data || []);
+    setModalOpen(null);
   }
 
   async function removeEntry(id: string) {
@@ -131,6 +133,12 @@ export default function MealPlanPage() {
           {meals.map((m) => (
             <div key={m} className="card p-4">
               <div className="text-white font-semibold capitalize mb-2">{m}</div>
+              <div className="mb-2 flex items-center justify-between text-xs text-white/70">
+                <button onClick={()=> { setModalOpen({ meal: m }); setResults([]); setQuery(""); }} className="px-2 py-1 rounded-full bg-white/10 hover:bg-white/15">Search</button>
+                <div>
+                  {Math.round(entries.filter(e=>e.meal===m).reduce((s,e)=> s+e.calories,0))} kcal
+                </div>
+              </div>
               <div className="space-y-2">
                 {entries.filter((e) => e.meal === m).map((e) => (
                   <div key={e.id} className="flex items-center justify-between rounded bg-white/5 ring-1 ring-white/10 px-3 py-2 text-sm">
@@ -151,34 +159,37 @@ export default function MealPlanPage() {
 
         {/* Right: search/add panel */}
         <div className="card p-4">
-          <div className="text-sm text-white/80 mb-2">Add food</div>
-          <div className="flex gap-2">
-            <input
-              value={query}
-              onChange={(e)=> setQuery(e.target.value)}
-              placeholder="Search foods (e.g., chicken breast 100g)"
-              className="flex-1 rounded bg-white/5 ring-1 ring-white/10 px-2 py-1 text-sm"
-            />
-            <button onClick={search} className="px-3 py-1 rounded-full text-xs font-semibold text-black bg-cyan-400 hover:bg-cyan-300">Search</button>
-          </div>
-          <div className="mt-3 max-h-[60vh] overflow-y-auto space-y-2 pr-1">
-            {results.map((f)=> (
-              <div key={f.id} className="rounded bg-white/5 ring-1 ring-white/10 px-3 py-2">
-                <div className="text-sm text-white">{f.name}</div>
-                <div className="text-xs text-white/60">{f.serving_size_g} g • {Math.round(f.calories)} kcal</div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {meals.map((m)=> (
-                    <button key={m} type="button" onClick={()=> addFood(f, m)} className="px-2 py-1 rounded-full text-[11px] font-semibold text-black bg-cyan-400 hover:bg-cyan-300 capitalize">Add to {m}</button>
-                  ))}
-                </div>
-              </div>
-            ))}
-            {results.length === 0 && (
-              <div className="text-xs text-white/50">Try a search above to add foods.</div>
-            )}
-          </div>
+          <div className="text-sm text-white/80 mb-2">Tips</div>
+          <div className="text-xs text-white/60">Use the Search button under each meal to add foods.</div>
         </div>
       </div>
+
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-2xl rounded-lg bg-black/80 ring-1 ring-white/10 p-4">
+            <div className="flex items-center justify-between">
+              <div className="text-white font-semibold">Add to {modalOpen.meal}</div>
+              <button className="text-white/70 text-sm" onClick={()=> setModalOpen(null)}>Close</button>
+            </div>
+            <div className="mt-3 flex gap-2">
+              <input value={query} onChange={(e)=> setQuery(e.target.value)} placeholder="Search foods (e.g., salmon 100g)" className="flex-1 rounded bg-white/5 ring-1 ring-white/10 px-2 py-1 text-sm" />
+              <button onClick={search} className="px-3 py-1 rounded-full text-xs font-semibold text-black bg-cyan-400 hover:bg-cyan-300">Search</button>
+            </div>
+            <div className="mt-3 max-h-[60vh] overflow-y-auto space-y-2 pr-1">
+              {results.map((f)=> (
+                <div key={f.id} className="rounded bg-white/5 ring-1 ring-white/10 px-3 py-2">
+                  <div className="text-sm text-white">{f.name}</div>
+                  <div className="text-xs text-white/60">{f.serving_size_g} g • {Math.round(f.calories)} kcal • P {Math.round(f.protein_g||0)}g • C {Math.round(f.carbohydrates_total_g||0)}g • F {Math.round(f.fat_total_g||0)}g</div>
+                  <button type="button" onClick={()=> addFood(f, modalOpen.meal)} className="mt-2 px-2 py-1 rounded-full text-[11px] font-semibold text-black bg-cyan-400 hover:bg-cyan-300">Add</button>
+                </div>
+              ))}
+              {results.length === 0 && (
+                <div className="text-xs text-white/50">Search to see foods.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
