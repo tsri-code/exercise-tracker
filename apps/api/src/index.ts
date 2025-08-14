@@ -397,7 +397,8 @@ app.post("/api/nutrition/diary", async (req, res) => {
       fat_g: z.number().nonnegative().optional(),
       carbohydrates_g: z.number().nonnegative().optional(),
     });
-    const data = schema.parse(req.body);
+    const bodyText = typeof req.body === 'string' ? req.body : undefined;
+    const data = bodyText ? schema.parse(JSON.parse(bodyText)) : schema.parse(req.body);
     const created = await prisma.mealEntry.create({
       data: {
         date: new Date(`${data.date}T12:00:00`),
@@ -434,15 +435,29 @@ app.get("/api/nutrition/search", async (req, res) => {
   if (!r.ok) return res.status(r.status).json({ error: await r.text() });
   const data = await r.json();
   // Normalize to a small shape
-  const items = (Array.isArray(data) ? data : []).map((it: any, i: number) => ({
-    id: `${(it.name || "food").toLowerCase()}-${i}`,
-    name: it.name,
-    serving_size_g: it.serving_size_g,
-    calories: it.calories,
-    protein_g: it.protein_g,
-    fat_total_g: it.fat_total_g,
-    carbohydrates_total_g: it.carbohydrates_total_g,
-  }));
+  const num = (x: any): number | null => {
+    const n = Number(x);
+    return Number.isFinite(n) ? n : null;
+  };
+  const items = (Array.isArray(data) ? data : []).map((it: any, i: number) => {
+    const p = num(it.protein_g);
+    const c = num(it.carbohydrates_total_g);
+    const f = num(it.fat_total_g);
+    let cal = num(it.calories);
+    if (cal == null && (p != null || c != null || f != null)) {
+      cal = (p ?? 0) * 4 + (c ?? 0) * 4 + (f ?? 0) * 9;
+    }
+    const size = num(it.serving_size_g) ?? 100;
+    return {
+      id: `${String(it.name || "food").toLowerCase()}-${i}`,
+      name: String(it.name || "Food"),
+      serving_size_g: size,
+      calories: cal ?? 0,
+      protein_g: p ?? undefined,
+      fat_total_g: f ?? undefined,
+      carbohydrates_total_g: c ?? undefined,
+    };
+  });
   res.json({ data: items });
 });
 
