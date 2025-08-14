@@ -53,10 +53,9 @@ export default function PersonalInfoPage() {
 
   async function save() {
     setSaving(true);
-    const method = profile.id ? "PUT" : "POST";
-    const url = profile.id
-      ? `${API_BASE_URL}/api/nutrition/profile/${profile.id}`
-      : `${API_BASE_URL}/api/nutrition/profile`;
+    // Use idless upsert endpoint to avoid stale ids
+    const method = "PUT";
+    const url = `${API_BASE_URL}/api/nutrition/profile`;
     await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },

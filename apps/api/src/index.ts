@@ -371,6 +371,21 @@ app.put("/api/nutrition/profile/:id", async (req, res) => {
   }
 });
 
+// Upsert profile without needing id on the client
+app.put("/api/nutrition/profile", async (req, res) => {
+  try {
+    const data = profileSchema.parse(req.body);
+    const target = computeTargetKcal(data);
+    const existing = await prisma.nutritionProfile.findFirst({ orderBy: { updatedAt: "desc" } });
+    const saved = existing
+      ? await prisma.nutritionProfile.update({ where: { id: existing.id }, data: { ...data, lastTargetKcal: target } })
+      : await prisma.nutritionProfile.create({ data: { ...data, lastTargetKcal: target } });
+    res.json({ data: saved });
+  } catch (e: any) {
+    res.status(400).json({ error: e?.message || "Invalid payload" });
+  }
+});
+
 // Calories diary CRUD
 app.get("/api/nutrition/diary", async (req, res) => {
   const dateStr = String(req.query.date || new Date().toISOString().slice(0, 10));
