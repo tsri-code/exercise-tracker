@@ -338,6 +338,55 @@ app.put("/api/nutrition/profile/:id", async (req, res) => {
   }
 });
 
+// Calories diary CRUD
+app.get("/api/nutrition/diary", async (req, res) => {
+  const dateStr = String(req.query.date || new Date().toISOString().slice(0, 10));
+  const start = new Date(`${dateStr}T00:00:00`);
+  const end = new Date(`${dateStr}T23:59:59`);
+  const items = await prisma.mealEntry.findMany({
+    where: { date: { gte: start, lte: end } },
+    orderBy: { createdAt: "asc" },
+  });
+  res.json({ data: items });
+});
+
+app.post("/api/nutrition/diary", async (req, res) => {
+  try {
+    const schema = z.object({
+      date: z.string(), // YYYY-MM-DD
+      meal: z.string(),
+      foodName: z.string(),
+      quantityGrams: z.number().positive(),
+      calories: z.number().nonnegative(),
+      protein_g: z.number().nonnegative().optional(),
+      fat_g: z.number().nonnegative().optional(),
+      carbohydrates_g: z.number().nonnegative().optional(),
+    });
+    const data = schema.parse(req.body);
+    const created = await prisma.mealEntry.create({
+      data: {
+        date: new Date(`${data.date}T12:00:00`),
+        meal: data.meal,
+        foodName: data.foodName,
+        quantityGrams: data.quantityGrams,
+        calories: data.calories,
+        protein_g: data.protein_g,
+        fat_g: data.fat_g,
+        carbohydrates_g: data.carbohydrates_g,
+      },
+    });
+    res.status(201).json({ data: created });
+  } catch (e: any) {
+    res.status(400).json({ error: e?.message || "Invalid payload" });
+  }
+});
+
+app.delete("/api/nutrition/diary/:id", async (req, res) => {
+  const { id } = req.params as { id: string };
+  await prisma.mealEntry.delete({ where: { id } }).catch(() => undefined);
+  res.json({ ok: true });
+});
+
 // Simple nutrition food search proxy (API Ninjas Nutrition)
 // https://api-ninjas.com/api/nutrition
 app.get("/api/nutrition/search", async (req, res) => {

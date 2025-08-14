@@ -61,7 +61,17 @@ export default function PersonalInfoPage() {
     const json = await res.json();
     if (json?.data) setProfile(json.data);
     setSaving(false);
-    computeTarget();
+    // store last target on profile for meal plan page
+    const kcal = computeTarget();
+    try {
+      if (profile.id && kcal) {
+        await fetch(`${API_BASE_URL}/api/nutrition/profile/${profile.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...profile, lastTargetKcal: Math.round(kcal) }),
+        });
+      }
+    } catch {}
   }
 
   function computeTarget() {
@@ -97,7 +107,9 @@ export default function PersonalInfoPage() {
     const maxDeficit = 0.25 * TDEE;
     const maxSurplus = 0.15 * TDEE;
     targetKcal = Math.max(TDEE - maxDeficit, Math.min(TDEE + maxSurplus, targetKcal));
-    setTarget(Math.round(targetKcal));
+    const rounded = Math.round(targetKcal);
+    setTarget(rounded);
+    return rounded;
   }
 
   return (

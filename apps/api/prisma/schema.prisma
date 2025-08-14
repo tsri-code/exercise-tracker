@@ -62,4 +62,19 @@ model NutritionProfile {
   allergies        String?
   mealsPerDay      Int?
   proteinPerKg     Float?
+  lastTargetKcal   Int?
+}
+
+model MealEntry {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  date         DateTime
+  meal         String   // breakfast | lunch | dinner | snack
+  foodName     String
+  quantityGrams Float
+  calories     Float
+  protein_g    Float?
+  fat_g        Float?
+  carbohydrates_g Float?
 }
