@@ -300,9 +300,7 @@ const profileSchema = z.object({
   gender: z.enum(["male", "female", "other"]).default("other"),
   goal: z.enum(["recomp", "lose", "gain"]),
   rateLbsPerWeek: z.number().min(-2).max(2).default(0),
-  activityLevel: z
-    .enum(["sedentary", "light", "moderate", "active", "very", "athlete"]) 
-    .default("moderate"),
+  activityLevel: z.enum(["sedentary", "light", "moderate", "active", "very", "athlete"]),
   bodyFatPercent: z.number().min(0).max(75).optional(),
   dietaryPreference: z.string().optional(),
   allergies: z.string().optional(),

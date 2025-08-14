@@ -29,7 +29,7 @@ const defaults: Profile = {
   gender: "other",
   goal: "recomp",
   rateLbsPerWeek: 0,
-  activityLevel: "moderate",
+  activityLevel: "light", // non-moderate default; user can change freely
 };
 
 export default function PersonalInfoPage() {

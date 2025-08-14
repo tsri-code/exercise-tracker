@@ -53,6 +53,16 @@ export default function MealPlanPage() {
     })();
   }, [date]);
 
+  // When user updates Personal Info and returns, reflect new goal automatically
+  useEffect(() => {
+    const id = setInterval(async () => {
+      const p = await fetch(`${API_BASE_URL}/api/nutrition/profile`).then((r) => r.json()).catch(()=>null);
+      const prof = p?.data;
+      if (prof) setTarget(prof.lastTargetKcal ?? computeTargetFromProfile(prof));
+    }, 5000);
+    return () => clearInterval(id);
+  }, []);
+
   const totals = useMemo(() => {
     const sum = entries.reduce(
       (acc, e) => {
